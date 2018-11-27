@@ -1,9 +1,9 @@
 '''
-Symplectic euler time integration of 2 particles
+Symplectic Euler time integration of 2 particles
 interacting under a morse potential in 3D euclidean space.
 
-Produces plots of the relative positions of the particles
-and the energy, both as functions of time.
+Produces plots of the relative seperations of the particles
+and the total energy, both as functions of time.
 Also saves these to file.
 '''
 
@@ -11,7 +11,7 @@ import sys
 import math
 import numpy as np
 import matplotlib.pyplot as pyplot
-from particle3D import Particle3D
+from Particle3D import Particle3D
 
 def force_dw(p1, p2, a, D, r):
     """
@@ -26,8 +26,8 @@ def force_dw(p1, p2, a, D, r):
     :param r: parameter r system specific, read in from file
     :return: force acting on particle as Numpy array
     """
-    exp = np.exp(-a*(np.absolute(p1.position-p2.position)- r))
-    force = -2*a*D*(1-exp)*exp*np.linalg.norm(p1.position-p2.position)
+    exponent = math.exp(-a*(np.linalg.norm(p1.position-p2.position)- r))
+    force = -2*a*D*(1-exponent)*exponent*((p1.position-p2.position)/np.linalg.norm(p1.position-p2.position))
     return force
 
 def pot_energy_dw(p1, p2, a, D, r):
@@ -43,8 +43,8 @@ def pot_energy_dw(p1, p2, a, D, r):
     :param r: parameter r system specific, read in from file
     :return: potential energy of pair as float
     """
-    exp = np.exp(-a*(np.absolute(p1.position-p2.position)- r))
-    potential = D*((1 -exp)**2 -1)
+    exponent = math.exp(-a*(np.linalg.norm(p1.position-p2.position)- r))
+    potential = D*((1 -exponent)**2 -1)
     return potential
 
 # Begin main code
@@ -61,74 +61,82 @@ def main():
     # Open output file
     outfile = open(outfile_name, "w")
 
-    # Set up simulation parameters
-    dt = 0.00001
+    #read in initial conditions from appropriate files
+    file_handle = open("N2_input.txt","r")
+    p1 = Particle3D.from_file(file_handle)
+    p2 = Particle3D.from_file(file_handle)
+    settings = open("N2_potential_settings.txt", "r")
+    a = float(settings.readline())
+    D = float(settings.readline())
+    r = float(settings.readline())
+
+    #Set up simulation parameters
+    dt = 0.001
     numstep = 5000
     time = 0.0
-    a = 2.65374
-    D = 5.21322
-    r = 1.20752
 
-    # Set up particle initial conditions: needs to be changed to read in from file
-    #particle1 = Particle3D(pos, vel, mass, label)
-    p1 = Particle3D(np.array([2.0,0.0,0.0]), np.array([0.1,0.0,0.0]), 16.0, "Particle 1")
-    p2 = Particle3D(np.array([2.0,0.0,0.0]), np.array([-0.1,0.0,0.0]), 16.0, "Particle 2")
-    seperation = p1.position - p2.position
+    #Calculate seperation vector and absolute value of it
+    seperation = np.linalg.norm(p1.position - p2.position)
+    vector_sep = Particle3D.vector_seperation(p1, p2)
+
     # Write out initial conditions
     energy = p1.kinetic_energy() + p2.kinetic_energy() + pot_energy_dw(p1, p2, a, D, r)
-    #outfile.write("{0:f} {4:12.8f}\n".format(time, p1.position[0], p1.position[1], p1.position[2], energy))
-    outfile.write(str(time) + str(seperation) + str(energy))
+    outfile.write("{0:f} {1:f} {2:f} {3:f} {4:12.8f}\n".format(time, vector_sep[0], vector_sep[1], vector_sep[2], energy))
+
 
     # Initialise data lists for plotting later
     time_list = [time]
-    pos_list = [p1.position-p2.position]
+    pos_list = [seperation]
     energy_list = [energy]
 
     # Start the time integration loop
 
     for i in range(numstep):
-        # Update particle position
+        # Update particle position and seperation
         p1.leap_pos1st(dt)
         p2.leap_pos1st(dt)
+        seperation = np.linalg.norm(p1.position - p2.position)
+        vector_sep = Particle3D.vector_seperation(p1, p2)
 
         # Calculate force
         force1 = force_dw(p1, p2, a, D, r)
-        force2 = - force1
+        force2 = -force1
+
         # Update particle velocity
         p1.leap_velocity(dt, force1)
         p2.leap_velocity(dt, force2)
+
         # Increase time
         time = time + dt
 
         # Output particle information
         energy = p1.kinetic_energy() +p2.kinetic_energy() + pot_energy_dw(p1, p2, a, D, r)
-        #outfile.write("{0:f} {1:f} {2:f} {3:f} {4:12.8f}\n".format(time, p1.position[0], p1.position[1], p1.position[2], energy))
-        outfile.write(str(time) + str(seperation) + str(energy))
+        outfile.write("{0:f} {1:f} {2:f} {3:f} {4:12.8f}\n".format(time, vector_sep[0], vector_sep[1], vector_sep[2], energy))
+
         # Append information to data lists
         time_list.append(time)
-        pos_list.append(p1.position-p2.position)
+        pos_list.append(seperation)
         energy_list.append(energy)
 
-
     # Post-simulation:
-
     # Close output file
     outfile.close()
 
     # Plot particle trajectory to screen
-    pyplot.title('Symplectic Euler: position vs time')
-    pyplot.xlabel('Time')
-    pyplot.ylabel('Position')
+    pyplot.title('Symplectic Euler: Seperation vs time')
+    pyplot.xlabel('Time, Seconds')
+    pyplot.ylabel('Seperation, Angstroms')
     pyplot.plot(time_list, pos_list)
     pyplot.show()
 
     # Plot particle energy to screen
-    pyplot.title('Symplectic Euler: total energy vs time')
-    pyplot.xlabel('Time')
-    pyplot.ylabel('Energy')
+    pyplot.title('Symplectic Euler: Total Energy vs Time')
+    pyplot.xlabel('Time, Seconds')
+    pyplot.ylabel('Energy, eV')
     pyplot.plot(time_list, energy_list)
     pyplot.show()
 
 
 # Execute main method:
 main()
+
