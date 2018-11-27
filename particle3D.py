@@ -1,6 +1,8 @@
 """
 Particle3D, a class to describe 3D particles
 """
+import numpy as np
+
 
 class Particle3D(object):
     """
@@ -17,6 +19,8 @@ class Particle3D(object):
     * kinetic energy
     * first-order velocity update
     * first- and second order position updates
+    * reads initial particle conditions from file
+    * vector seperation of the particles
     """
 
     def __init__(self, pos, vel, mass, label):
@@ -41,7 +45,7 @@ class Particle3D(object):
         "<label> x = 2.0, y = 0.5, z = 1.0"
         """
 
-        return str(self.label) + ", x = " + str(self.position[0]) + ", y = " + str(self.position[1]) + ", z = " + str(self.position[2])
+        return str(self.label) + "x = " + str(self.position[0]) + ", y = " + str(self.position[1]) + ", z = " + str(self.position[2])
 
     def kinetic_energy(self):
         """
@@ -49,7 +53,7 @@ class Particle3D(object):
         1/2*mass*vel^2
         """
 
-        return 0.5*self.mass*self.velocity**2
+        return 0.5*self.mass*np.linalg.norm(self.velocity)**2
 
     # Time integration methods
 
@@ -84,3 +88,23 @@ class Particle3D(object):
         """
 
         self.position = self.position + dt*self.velocity + 0.5*dt**2*force/self.mass
+
+    @staticmethod
+    def from_file(file_handle):
+        #read content from file
+        line = file_handle.readline()
+        data = line.split()
+        pos = np.array([float(data[0]), float(data[1]), float(data[2])])
+        vel = np.array([float(data[3]), float(data[4]), float(data[5])])
+        mass = float(data[6])
+        label = data[7]
+        #call Particle3D __init__ method
+        return Particle3D(pos, vel, mass, label)
+
+    @staticmethod
+    def vector_seperation(p1, p2):
+        '''
+        return seperation as vector difference
+        in particles positions
+        '''
+        return p1.position - p2.position
