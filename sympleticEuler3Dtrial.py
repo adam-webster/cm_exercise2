@@ -71,8 +71,8 @@ def main():
     r = float(settings.readline())
 
     #Set up simulation parameters
-    dt = 0.001
-    numstep = 5000
+    dt = 0.014
+    numstep = 110
     time = 0.0
 
     #Calculate seperation vector and absolute value of it
@@ -124,14 +124,14 @@ def main():
 
     # Plot particle trajectory to screen
     pyplot.title('Symplectic Euler: Seperation vs time')
-    pyplot.xlabel('Time, Seconds')
+    pyplot.xlabel('Time, 10.18fs')
     pyplot.ylabel('Seperation, Angstroms')
     pyplot.plot(time_list, pos_list)
     pyplot.show()
 
     # Plot particle energy to screen
     pyplot.title('Symplectic Euler: Total Energy vs Time')
-    pyplot.xlabel('Time, Seconds')
+    pyplot.xlabel('Time, 10.18fs')
     pyplot.ylabel('Energy, eV')
     pyplot.plot(time_list, energy_list)
     pyplot.show()
@@ -139,4 +139,3 @@ def main():
 
 # Execute main method:
 main()
-
