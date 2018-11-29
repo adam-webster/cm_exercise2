@@ -71,13 +71,13 @@ def main():
     r = float(settings.readline())
 
     #Set up simulation parameters
-    dt = 0.001
-    numstep = 5000
+    dt = 0.105
+    numstep = 105
     time = 0.0
-
+    
     #Calculate seperation vector and absolute value of it
     vector_sep = Particle3D.vector_seperation(p1, p2)
-    seperation = np.linalg.norm(p1.position - p2.position)
+    seperation = np.linalg.norm(vector_sep)
 
     # Write out initial conditions
     energy = p1.kinetic_energy() + p2.kinetic_energy() + pot_energy_dw(p1, p2, a, D, r)
@@ -133,14 +133,14 @@ def main():
 
     # Plot particle trajectory to screen
     pyplot.title('Velocity Verlet: Seperation vs Time')
-    pyplot.xlabel('Time, Seconds')
+    pyplot.xlabel('Time, 10.18fs')
     pyplot.ylabel('Seperation, Angstroms')
     pyplot.plot(time_list, pos_list)
     pyplot.show()
 
     # Plot particle energy to screen
     pyplot.title('Velocity Verlet: Total Energy vs Time')
-    pyplot.xlabel('Time, Seconds')
+    pyplot.xlabel('Time, 10.18fs')
     pyplot.ylabel('Energy, eV')
     pyplot.plot(time_list, energy_list)
     pyplot.show()
@@ -148,3 +148,4 @@ def main():
 
 # Execute main method:
 main()
+
