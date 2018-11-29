@@ -45,7 +45,7 @@ class Particle3D(object):
         "<label> x = 2.0, y = 0.5, z = 1.0"
         """
 
-        return str(self.label) + "x = " + str(self.position[0]) + ", y = " + str(self.position[1]) + ", z = " + str(self.position[2])
+        return str(self.label) + " x = " + str(self.position[0]) + ", y = " + str(self.position[1]) + ", z = " + str(self.position[2])
 
     def kinetic_energy(self):
         """
